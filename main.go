@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"io/ioutil"
 
 	flag "github.com/ogier/pflag"
 	yaml "gopkg.in/yaml.v2"
@@ -233,7 +234,27 @@ func main() {
 		fmt.Printf("Error marshaling yaml: %s\n", err)
 		os.Exit(1)
 	}
-	fmt.Println("\n# Add the following to your ~/.kube/config")
-	fmt.Println(string(response))
+
+	kubeCfg := os.Getenv("KUBECONFIG")
+	if kubeCfg == "" {
+		kubeCfg = "~/.kube/config"
+	}
+
+	b, err := ioutil.ReadFile(kubeCfg)
+	if err != nil {
+		fmt.Println("Error reading kubeconfig %s", err)
+	}
+	str := string(b)
+	i := strings.LastIndex( str,"users:")
+	str = str[0:i] //trims out any old user data
+	newKubeConfig := str + string(response)
+
+	e := ioutil.WriteFile(kubeCfg, []byte(newKubeConfig), 0644)
+	if e != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("kube_config updated for user: ", email)
+	//fmt.Println("\n# Add the following to your ~/.kube/config")
+	//fmt.Println(string(response))
 
 }
