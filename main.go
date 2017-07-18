@@ -249,7 +249,7 @@ func main() {
 	str = str[0:i] //trims out any old user data
 	newKubeConfig := str + string(response)
 
-	e := ioutil.WriteFile(kubeCfg, []byte(newKubeConfig), 0644)
+	e := ioutil.WriteFile(kubeCfg, []byte(newKubeConfig), 0600)
 	if e != nil {
 		fmt.Println(err)
 	}
